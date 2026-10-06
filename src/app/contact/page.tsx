@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: `ติดต่อ ${site.nameTh} โทร ${site.phone} · LINE ${site.lineId} · ${site.email}`,
 }
 
-const mapQuery = encodeURIComponent(site.address)
+const mapQuery = encodeURIComponent(site.plusCode)
 
 export default function ContactPage() {
   return (
@@ -39,7 +39,13 @@ export default function ContactPage() {
             href={`mailto:${site.email}`}
             value={site.email}
           />
-          <ContactRow icon={MapPin} label="ที่ตั้งสำนักงาน" value={site.address} />
+          <ContactRow
+            icon={MapPin}
+            label="ที่ตั้งสำนักงาน"
+            value={site.address}
+            href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
+            external
+          />
           <ContactRow icon={Clock} label="เวลาทำการ" value={site.hours} />
 
           <div className="rounded-2xl border border-navy-100 bg-navy-50/50 p-6">
