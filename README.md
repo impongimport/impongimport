@@ -11,7 +11,16 @@ cp .env.example .env.local   # ใส่ค่า Supabase
 npm run dev                  # http://localhost:3011
 ```
 
-## ตั้งค่า Supabase
+## รัน migration
+
+```bash
+python3 run_sql.py supabase-schema.sql
+```
+
+สคริปต์อ่าน Supabase Management API token จาก macOS keychain (`supabase-mgmt-impong`)
+ทั้งไฟล์รันใน transaction เดียว — error กลางทางคือ rollback ทั้งหมด เหมือน SQL Editor
+
+## ตั้งค่า Supabase (ทำไว้แล้ว)
 
 1. สร้าง project ในบัญชี `impongimport@gmail.com`
 2. SQL Editor → รัน `supabase-schema.sql` (ตาราง + RLS + trigger + bucket `media`)

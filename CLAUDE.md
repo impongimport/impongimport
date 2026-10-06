@@ -48,6 +48,15 @@ navy `#1a344b` (ดูดมาจากไฟล์โลโก้) · ขา�
 
 ## บัญชีและค่าที่เกี่ยวข้อง
 
-- ทุกอย่าง (GitHub / Vercel / Supabase) อยู่ในบัญชี `impongimport@gmail.com`
-- Supabase project ref: _(ยังไม่ได้กรอก)_
-- Vercel: _(ยังไม่ได้กรอก)_ · GitHub repo: _(ยังไม่ได้กรอก)_
+- ทุกอย่างอยู่ในบัญชี `impongimport@gmail.com`
+- Supabase project ref `orumtzbcpqlfrqfuplbv` (org `impongimport's Org`, region ap-northeast-2)
+  Management API token อยู่ใน keychain ชื่อ service `supabase-mgmt-impong` (scope เฉพาะโปรเจคนี้, ไม่หมดอายุ)
+  รัน migration: `python3 run_sql.py <file.sql>` — ไฟล์ทั้งไฟล์รันใน transaction เดียว
+- GitHub `impongimport/impongimport` — repo ตั้ง `credential.useHttpPath=true` และมี classic PAT
+  ของบัญชี impongimport เก็บใน keychain ของ git (`git push origin main` ทำงานได้เลย)
+  การสร้าง PAT ใหม่ต้องยืนยันตัวตนทางอีเมล (รหัส 8 หลักส่งเข้า impongimport@gmail.com)
+- Vercel team `impong` project `impongimport` → **https://impongimport.vercel.app**
+  env ตั้งไว้ครบทั้ง Production/Preview/Development
+- Google Cloud project `sincere-octane-510801-p1` ("IMPONG IMPORT Web") ในบัญชี impongimport
+  (authuser=6 ใน Chrome) · OAuth client "IMPONG IMPORT Web" · consent screen **In production** แล้ว
+  redirect URI = `https://orumtzbcpqlfrqfuplbv.supabase.co/auth/v1/callback`
