@@ -78,8 +78,16 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-navy-300 sm:px-6">
-          © {new Date().getFullYear()} {site.nameEn} · สงวนลิขสิทธิ์
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-5 text-xs text-navy-300 sm:px-6">
+          <span>
+            © {new Date().getFullYear()} {site.nameEn} · สงวนลิขสิทธิ์
+          </span>
+          <Link href="/privacy" className="transition hover:text-gold">
+            นโยบายความเป็นส่วนตัว
+          </Link>
+          <Link href="/terms" className="transition hover:text-gold">
+            ข้อกำหนดการใช้งาน
+          </Link>
         </div>
       </div>
     </footer>
