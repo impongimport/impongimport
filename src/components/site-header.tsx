@@ -37,8 +37,8 @@ export function SiteHeader({ signedIn, isAdmin }: Props) {
             className="h-13 w-auto"
           />
           <span className="hidden flex-col leading-tight sm:flex">
-            <span className="font-display text-xl font-semibold tracking-wide text-navy">
-              IMPONG IMPORT
+            <span className="font-display text-xl font-semibold text-navy">
+              {site.nameThShort}
             </span>
             <span className="text-xs tracking-wider text-navy-400">
               อุปกรณ์การแพทย์แผนจีน

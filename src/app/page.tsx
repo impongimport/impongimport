@@ -15,6 +15,7 @@ import { ProductCard } from '@/components/product-card'
 import { formatDate } from '@/lib/format'
 import { getCategories, getFeaturedProducts, getNews } from '@/lib/queries'
 import { customers, site } from '@/lib/site'
+import { keepWords } from '@/lib/text'
 
 export const revalidate = 300
 
@@ -68,14 +69,15 @@ export default async function HomePage() {
               <Building2 className="size-3.5" />
               ผู้นำเข้าอุปกรณ์การแพทย์แผนจีน
             </span>
-            <h1 className="mt-6 font-display text-4xl leading-tight font-semibold text-white sm:text-5xl">
-              อุปกรณ์การแพทย์แผนจีน
+            <h1 className="mt-6 font-display text-3xl leading-tight font-semibold break-words text-white sm:text-[2.5rem]">
+              {keepWords('อุปกรณ์การแพทย์แผนจีน')}
               <br />
-              <span className="text-gold">คุณภาพสำหรับสถานพยาบาล</span>
+              <span className="text-gold">{keepWords('คุณภาพสำหรับสถานพยาบาล')}</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-navy-200">
-              {site.nameTh} นำเข้าและจัดจำหน่ายเข็มฝังเข็ม เครื่องกระตุ้นไฟฟ้า และชุดครอบแก้ว
-              ให้โรงพยาบาล คลินิก และศูนย์การแพทย์ทั่วประเทศ
+            <p className="mt-6 max-w-xl text-lg leading-relaxed break-words text-navy-200">
+              {keepWords(
+                `${site.nameTh} นำเข้าและจัดจำหน่ายเข็มฝังเข็ม เครื่องกระตุ้นไฟฟ้า และชุดครอบแก้ว ให้โรงพยาบาล คลินิก และศูนย์การแพทย์ทั่วประเทศ`
+              )}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
