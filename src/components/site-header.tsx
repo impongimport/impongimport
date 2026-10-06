@@ -26,21 +26,21 @@ export function SiteHeader({ signedIn, isAdmin }: Props) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-navy-100 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-18 max-w-6xl items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-22 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-3">
           <Image
-            src="/brand/logo-mark-navy.png"
+            src="/brand/mark-navy.png"
             alt={site.nameEn}
-            width={160}
-            height={160}
+            width={358}
+            height={395}
             priority
-            className="h-11 w-auto"
+            className="h-13 w-auto"
           />
           <span className="hidden flex-col leading-tight sm:flex">
-            <span className="font-display text-lg font-semibold tracking-wide text-navy">
+            <span className="font-display text-xl font-semibold tracking-wide text-navy">
               IMPONG IMPORT
             </span>
-            <span className="text-[11px] tracking-wider text-navy-400">
+            <span className="text-xs tracking-wider text-navy-400">
               อุปกรณ์การแพทย์แผนจีน
             </span>
           </span>

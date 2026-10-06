@@ -20,10 +20,10 @@ export default async function LoginPage({
     <div className="mx-auto grid max-w-md px-4 py-20 sm:px-6">
       <div className="rounded-3xl border border-navy-100 bg-white p-8 text-center shadow-sm">
         <Image
-          src="/brand/logo-mark-navy.png"
+          src="/brand/mark-navy.png"
           alt={site.nameEn}
-          width={200}
-          height={200}
+          width={358}
+          height={395}
           className="mx-auto h-20 w-auto"
         />
         <h1 className="mt-6 font-display text-2xl font-semibold text-navy">เข้าสู่ระบบลูกค้า</h1>
