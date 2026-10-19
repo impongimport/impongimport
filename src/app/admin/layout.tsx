@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, LayoutDashboard, Newspaper, Package, Users } from 'lucide-react'
+import { FileText, LayoutDashboard, Newspaper, Package, QrCode, Users } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth'
 
 const NAV = [
@@ -8,6 +8,7 @@ const NAV = [
   { href: '/admin/products', label: 'สินค้า', icon: Package },
   { href: '/admin/news', label: 'ข่าวสาร', icon: Newspaper },
   { href: '/admin/customers', label: 'ลูกค้า', icon: Users },
+  { href: '/admin/booth', label: 'งานออกบูธ', icon: QrCode },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

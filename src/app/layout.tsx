@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Sans_Thai, Poppins } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
+import { ChromeGate } from '@/components/chrome-gate'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { getSession, isAdmin } from '@/lib/auth'
@@ -39,9 +40,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="th" className={`${plexThai.variable} ${poppins.variable}`}>
       <body className="flex min-h-screen flex-col font-sans antialiased">
-        <SiteHeader signedIn={Boolean(session)} isAdmin={isAdmin(session?.profile)} />
+        <ChromeGate>
+          <SiteHeader signedIn={Boolean(session)} isAdmin={isAdmin(session?.profile)} />
+        </ChromeGate>
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <ChromeGate>
+          <SiteFooter />
+        </ChromeGate>
         <Toaster
           position="top-center"
           toastOptions={{ style: { background: '#1a344b', color: '#fff' } }}

@@ -108,3 +108,48 @@ export type QuoteRequest = {
   quote_request_items?: QuoteItem[]
   profiles?: Pick<Profile, 'id' | 'email' | 'full_name'> | null
 }
+
+export type BoothEvent = {
+  id: string
+  slug: string
+  name: string
+  venue: string | null
+  starts_on: string | null
+  ends_on: string | null
+  prize: string | null
+  intro: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export type BoothEntry = {
+  id: string
+  event_id: string
+  ticket_code: string
+  full_name: string
+  org_name: string
+  role: string | null
+  phone: string
+  email: string | null
+  answers: Record<string, string | string[]>
+  user_id: string | null
+  quote_request_id: string | null
+  is_winner: boolean
+  won_at: string | null
+  admin_note: string | null
+  created_at: string
+}
+
+/** ผลรวมจาก RPC booth_stats() — ไม่มีข้อมูลส่วนบุคคล ใช้ฉายขึ้นจอได้ */
+export type BoothStats = {
+  name: string
+  venue: string | null
+  prize: string | null
+  total: number
+  orgs: number
+  needle_type: Record<string, number>
+  handle: Record<string, number>
+  sizes: Record<string, number>
+  interests: Record<string, number>
+  winners: { ticket: string; org: string }[]
+}
