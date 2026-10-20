@@ -35,7 +35,15 @@ export function ImageUpload({
     setBusy(false)
 
     if (error) {
-      toast.error('อัปโหลดไม่สำเร็จ: ' + error.message)
+      // Supabase ตอบเป็นภาษาฐานข้อมูลเมื่อ RLS ปัดทิ้ง ซึ่งเกิดตอนบัญชีที่ล็อกอินอยู่
+      // ไม่ใช่แอดมิน (เช่นเปิดหน้าแอดมินค้างไว้แล้วไปสลับบัญชีในอีกแท็บ)
+      const denied = /row-level security|unauthorized|forbidden|jwt/i.test(error.message)
+      toast.error(
+        denied
+          ? 'บัญชีที่เข้าสู่ระบบอยู่ไม่มีสิทธิ์อัปโหลดรูป กรุณาออกจากระบบแล้วเข้าใหม่ด้วยบัญชีแอดมิน'
+          : 'อัปโหลดไม่สำเร็จ: ' + error.message,
+        { duration: 8000 }
+      )
       return
     }
     const { data } = supabase.storage.from('media').getPublicUrl(path)
