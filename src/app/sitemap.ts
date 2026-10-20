@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
+import { site } from '@/lib/site'
 import { getNewsSlugs, getProductSlugs } from '@/lib/queries'
 
-const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://impong.vercel.app'
+const base = site.url
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, news] = await Promise.all([getProductSlugs(), getNewsSlugs()])

@@ -3,6 +3,8 @@ export const site = {
   nameTh: 'บริษัท อิมผ่ง อิมพอร์ต จำกัด',
   /** ชื่อย่อไทยสำหรับหัวเว็บ — ไม่มีคำว่า บริษัท / จำกัด */
   nameThShort: 'อิมผ่ง อิมพอร์ต',
+  /** โดเมนจริงของเว็บ — ใช้สร้าง QR, sitemap, robots ประกาศไว้ที่เดียวจะได้ไม่หลุด */
+  url: 'https://impong.com',
   nameEn: 'IMPONG IMPORT CO., LTD.',
   short: 'IMPONG IMPORT',
   tagline: 'ผู้นำเข้าและจัดจำหน่ายอุปกรณ์การแพทย์แผนจีน',

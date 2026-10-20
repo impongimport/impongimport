@@ -28,16 +28,21 @@ import {
 } from '@/lib/actions/booth'
 import { formatPhone, summarizeAnswers } from '@/lib/booth'
 import { formatDateTime } from '@/lib/format'
+import { site } from '@/lib/site'
 import { createClient } from '@/lib/supabase/server'
 import type { BoothEntry, BoothEvent, BoothPrize } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * QR ที่พิมพ์ไปติดบูธต้องเป็นโดเมนจริงเสมอ จึงอ่านจาก `site.url` ไม่ใช่ env
+ * (env เคยค้างเป็น URL ของ Vercel หลังย้ายมาใช้ impong.com แล้ว QR เลยผิด)
+ * ยกเว้นตอนรันบนเครื่อง dev ให้ชี้กลับมาที่เครื่องตัวเอง จะได้ลองสแกนได้
+ */
 async function getBaseUrl() {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
-  if (fromEnv) return fromEnv
-  const host = (await headers()).get('host') ?? 'localhost:3011'
-  return `${host.startsWith('localhost') ? 'http' : 'https'}://${host}`
+  const host = (await headers()).get('host') ?? ''
+  if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) return `http://${host}`
+  return site.url
 }
 
 export default async function AdminBoothEvent({ params }: { params: Promise<{ id: string }> }) {
