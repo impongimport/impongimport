@@ -80,10 +80,11 @@ export function SiteHeader({ signedIn, isAdmin }: Props) {
           {isAdmin && (
             <Link
               href="/admin"
-              className="hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-navy-500 transition hover:bg-navy-50 hover:text-navy sm:inline-flex"
+              aria-label="แอดมิน"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-navy-500 transition hover:bg-navy-50 hover:text-navy"
             >
               <LayoutDashboard className="size-4" />
-              แอดมิน
+              <span className="hidden sm:inline">แอดมิน</span>
             </Link>
           )}
 
