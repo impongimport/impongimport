@@ -145,6 +145,23 @@ export async function savePrize(
   return { ok: true, message: 'บันทึกของรางวัลแล้ว' }
 }
 
+/** แอดมินกดยืนยันว่าผู้ร่วมงานส่งรูปเลขสิทธิ์เข้า LINE แล้ว — เงื่อนไขของการจับฉลาก */
+export async function toggleEntryConfirmed(formData: FormData): Promise<void> {
+  const ctx = await requireAdminClient()
+  if (!ctx) return
+
+  const id = formData.get('id') as string
+  const eventId = formData.get('event_id') as string
+  const confirmed = formData.get('confirmed') === '1'
+
+  await ctx.supabase
+    .from('booth_entries')
+    .update({ confirmed_at: confirmed ? null : new Date().toISOString() })
+    .eq('id', id)
+
+  revalidatePath(`/admin/booth/${eventId}`)
+}
+
 export async function deletePrize(formData: FormData): Promise<void> {
   const ctx = await requireAdminClient()
   if (!ctx) return

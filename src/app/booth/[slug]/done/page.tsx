@@ -59,8 +59,11 @@ export default async function BoothDonePage({
         {/* ขั้นตอนสุดท้าย — จุดนี้คือตัวผลักให้คนเพิ่มเพื่อน LINE OA */}
         <div className="mt-8 rounded-2xl border border-navy-100 bg-navy-50/60 p-6 text-left">
           <h2 className="text-center font-display text-lg font-semibold text-navy">
-            อีกขั้นตอนเดียว
+            อีกขั้นตอนเพื่อยืนยันสิทธิ์
           </h2>
+          <p className="mt-2 text-center text-sm leading-relaxed text-navy-500">
+            เฉพาะผู้ที่ส่งรูปยืนยันแล้วเท่านั้นที่มีสิทธิ์ร่วมจับฉลาก
+          </p>
           <ol className="mt-5 space-y-4">
             <Step n={1}>
               <strong className="font-medium text-navy">แคปหน้าจอนี้เก็บไว้</strong>{' '}
@@ -72,7 +75,7 @@ export default async function BoothDonePage({
             </Step>
             <Step n={3}>
               <strong className="font-medium text-navy">ส่งรูปที่แคปเข้าไลน์</strong>{' '}
-              ทีมงานจะตอบกลับยืนยันให้
+              ทีมงานจะตอบกลับยืนยันสิทธิ์ให้
             </Step>
           </ol>
 

@@ -12,6 +12,8 @@ import {
   Monitor,
   Shuffle,
   Trophy,
+  CheckCircle2,
+  Circle,
 } from 'lucide-react'
 import { BoothEventForm } from '@/components/booth-event-form'
 import { BoothPrizeForm } from '@/components/booth-prize-form'
@@ -19,6 +21,7 @@ import {
   createQuoteFromEntry,
   deletePrize,
   drawBoothWinner,
+  toggleEntryConfirmed,
   undoBoothWinner,
 } from '@/lib/actions/booth'
 import { formatPhone, summarizeAnswers } from '@/lib/booth'
@@ -62,7 +65,8 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
   for (const w of winners) {
     if (w.prize_id) awardedByPrize.set(w.prize_id, (awardedByPrize.get(w.prize_id) ?? 0) + 1)
   }
-  const everyoneWon = entries.length > 0 && entries.length === winners.length
+  const confirmed = entries.filter((e) => e.confirmed_at)
+  const drawPool = confirmed.filter((e) => !e.is_winner)
 
   const baseUrl = await getBaseUrl()
   const formUrl = `${baseUrl}/booth/${event.slug}`
@@ -83,7 +87,7 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
 
       <h2 className="mt-5 font-display text-2xl font-semibold text-navy">{event.name}</h2>
       <p className="mt-1 text-sm text-navy-400">
-        {entries.length} รายชื่อ · {winners.length} ผู้โชคดี
+        {entries.length} รายชื่อ · ยืนยันสิทธิ์แล้ว {confirmed.length} · {winners.length} ผู้โชคดี
       </p>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr] lg:items-start">
@@ -144,7 +148,9 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
               <Trophy className="size-4 text-gold-600" /> จับฉลาก
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-navy-600">
-              กดสุ่มได้เท่ากับจำนวนของรางวัลแต่ละระดับ ระบบสุ่มจากผู้ลงทะเบียนที่ยังไม่เคยถูกรางวัล
+              กดสุ่มได้เท่ากับจำนวนของรางวัลแต่ละระดับ ระบบสุ่มเฉพาะคนที่
+              <strong className="font-medium text-navy"> ยืนยันสิทธิ์แล้ว </strong>
+              (ส่งรูปเลขสิทธิ์เข้า LINE) และยังไม่เคยถูกรางวัล — ตอนนี้สุ่มได้ {drawPool.length} คน
             </p>
 
             {prizes.length === 0 ? (
@@ -184,7 +190,7 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
                         <input type="hidden" name="prize_id" value={prize.id} />
                         <button
                           type="submit"
-                          disabled={left <= 0 || everyoneWon || entries.length === 0}
+                          disabled={left <= 0 || drawPool.length === 0}
                           className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-3 text-sm font-medium text-white transition hover:bg-navy-700 disabled:opacity-40"
                         >
                           <Shuffle className="size-4" />
@@ -197,11 +203,14 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
               </ul>
             )}
 
-            {entries.length === 0 && (
-              <p className="mt-4 text-sm text-navy-400">ยังไม่มีผู้ลงทะเบียนให้สุ่ม</p>
-            )}
-            {everyoneWon && (
-              <p className="mt-4 text-sm text-navy-400">ผู้ลงทะเบียนถูกรางวัลครบทุกคนแล้ว</p>
+            {drawPool.length === 0 && (
+              <p className="mt-4 text-sm text-navy-400">
+                {entries.length === 0
+                  ? 'ยังไม่มีผู้ลงทะเบียน'
+                  : confirmed.length === 0
+                    ? 'ยังไม่มีใครยืนยันสิทธิ์ — กดยืนยันในรายชื่อด้านล่างเมื่อได้รับรูปทางไลน์'
+                    : 'คนที่ยืนยันสิทธิ์ถูกรางวัลครบทุกคนแล้ว'}
+              </p>
             )}
 
             {winners.length > 0 && (
@@ -299,8 +308,13 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
                             : 'ผู้โชคดี'}
                         </span>
                       )}
+                      {entry.confirmed_at && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                          <CheckCircle2 className="size-3" /> ยืนยันสิทธิ์แล้ว
+                        </span>
+                      )}
                       {entry.user_id && (
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                        <span className="rounded-full bg-navy-50 px-2.5 py-0.5 text-xs font-medium text-navy-600">
                           มีบัญชีในระบบ
                         </span>
                       )}
@@ -327,7 +341,35 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
                       ))}
                     </ul>
 
-                    <div className="mt-4">
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <form action={toggleEntryConfirmed}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <input type="hidden" name="event_id" value={event.id} />
+                        <input
+                          type="hidden"
+                          name="confirmed"
+                          value={entry.confirmed_at ? '1' : '0'}
+                        />
+                        <button
+                          type="submit"
+                          className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                            entry.confirmed_at
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                              : 'border-navy-200 text-navy hover:border-gold'
+                          }`}
+                        >
+                          {entry.confirmed_at ? (
+                            <>
+                              <CheckCircle2 className="size-4" /> ยืนยันแล้ว
+                            </>
+                          ) : (
+                            <>
+                              <Circle className="size-4 text-navy-300" /> กดยืนยันสิทธิ์
+                            </>
+                          )}
+                        </button>
+                      </form>
+
                       {entry.quote_request_id ? (
                         <Link
                           href={`/admin/quotes/${entry.quote_request_id}`}

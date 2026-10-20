@@ -41,6 +41,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     'เบอร์โทร',
     'อีเมล',
     ...BOOTH_QUESTIONS.map((q) => q.label),
+    'ยืนยันสิทธิ์',
     'ผู้โชคดี',
     'ลงทะเบียนเมื่อ',
   ]
@@ -56,6 +57,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       const value = entry.answers?.[q.key]
       return Array.isArray(value) ? value.join(' / ') : (value ?? '')
     }),
+    entry.confirmed_at ? 'ยืนยันแล้ว' : '',
     entry.is_winner ? 'ใช่' : '',
     new Date(entry.created_at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }),
   ])

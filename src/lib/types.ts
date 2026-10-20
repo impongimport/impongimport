@@ -134,6 +134,7 @@ export type BoothEntry = {
   user_id: string | null
   quote_request_id: string | null
   prize_id: string | null
+  confirmed_at: string | null
   is_winner: boolean
   won_at: string | null
   admin_note: string | null
@@ -155,6 +156,7 @@ export type BoothStats = {
   name: string
   venue: string | null
   total: number
+  confirmed: number
   orgs: number
   needle_type: Record<string, number>
   handle: Record<string, number>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Gift, Maximize2, Minimize2, Ticket, Trophy, Users } from 'lucide-react'
+import { CheckCircle2, Gift, Maximize2, Minimize2, Ticket, Trophy, Users } from 'lucide-react'
 import { BOOTH_QUESTIONS } from '@/lib/booth'
 import { createClient } from '@/lib/supabase/client'
 import type { BoothStats } from '@/lib/types'
@@ -177,8 +177,9 @@ export function BoothStatsScreen({ slug, initial }: { slug: string; initial: Boo
           </section>
         )}
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+        <div className="mt-10 grid gap-5 sm:grid-cols-3">
           <Stat icon={Users} label="ผู้ร่วมตอบแบบสอบถาม" value={stats.total} />
+          <Stat icon={CheckCircle2} label="ยืนยันสิทธิ์จับฉลากแล้ว" value={stats.confirmed} />
           <Stat icon={Ticket} label="หน่วยงานที่แวะบูธ" value={stats.orgs} />
         </div>
 
