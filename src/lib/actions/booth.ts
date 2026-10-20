@@ -162,6 +162,49 @@ export async function toggleEntryConfirmed(formData: FormData): Promise<void> {
   revalidatePath(`/admin/booth/${eventId}`)
 }
 
+/** กดรวดเดียวตอนเคลียร์รอบสุดท้าย — ยืนยันเฉพาะคนที่ยังไม่ถูกยืนยัน */
+export async function confirmAllEntries(formData: FormData): Promise<void> {
+  const ctx = await requireAdminClient()
+  if (!ctx) return
+
+  const eventId = formData.get('event_id') as string
+  await ctx.supabase
+    .from('booth_entries')
+    .update({ confirmed_at: new Date().toISOString() })
+    .eq('event_id', eventId)
+    .is('confirmed_at', null)
+
+  revalidatePath(`/admin/booth/${eventId}`)
+}
+
+/**
+ * ลบงานออกบูธ — ลบรายชื่อผู้ลงทะเบียนและของรางวัลทั้งหมดไปด้วย (cascade)
+ * จึงบังคับให้พิมพ์ slug ยืนยัน และตรวจซ้ำฝั่งเซิร์ฟเวอร์ ไม่เชื่อค่าจากฟอร์มอย่างเดียว
+ */
+export async function deleteBoothEvent(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const ctx = await requireAdminClient()
+  if (!ctx) return { ok: false, message: 'ไม่มีสิทธิ์' }
+
+  const id = formData.get('id') as string
+  const typed = ((formData.get('confirm_slug') as string) ?? '').trim()
+
+  const { data } = await ctx.supabase.from('booth_events').select('slug').eq('id', id).maybeSingle()
+  if (!data) return { ok: false, message: 'ไม่พบงานนี้' }
+
+  if (typed !== data.slug) {
+    return { ok: false, message: `พิมพ์ "${data.slug}" ให้ตรงเพื่อยืนยันการลบ` }
+  }
+
+  const { error } = await ctx.supabase.from('booth_events').delete().eq('id', id)
+  if (error) return { ok: false, message: 'ลบไม่สำเร็จ: ' + error.message }
+
+  revalidatePath('/admin/booth')
+  redirect('/admin/booth')
+}
+
 export async function deletePrize(formData: FormData): Promise<void> {
   const ctx = await requireAdminClient()
   if (!ctx) return

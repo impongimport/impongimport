@@ -15,10 +15,12 @@ import {
   CheckCircle2,
   Circle,
 } from 'lucide-react'
+import { BoothEventDelete } from '@/components/booth-event-delete'
 import { BoothEventForm } from '@/components/booth-event-form'
 import { BoothPrizeForm } from '@/components/booth-prize-form'
 import {
   createQuoteFromEntry,
+  confirmAllEntries,
   deletePrize,
   drawBoothWinner,
   toggleEntryConfirmed,
@@ -288,7 +290,23 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
 
           {/* รายชื่อ */}
           <section className="mt-10">
-            <h3 className="font-display text-base font-semibold text-navy">รายชื่อผู้ลงทะเบียน</h3>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-display text-base font-semibold text-navy">
+                รายชื่อผู้ลงทะเบียน
+              </h3>
+              {entries.length > confirmed.length && (
+                <form action={confirmAllEntries}>
+                  <input type="hidden" name="event_id" value={event.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300"
+                  >
+                    <CheckCircle2 className="size-4" />
+                    ยืนยันสิทธิ์ทั้งหมด ({entries.length - confirmed.length} คน)
+                  </button>
+                </form>
+              )}
+            </div>
             {entries.length === 0 ? (
               <p className="mt-4 rounded-2xl border border-dashed border-navy-200 px-6 py-12 text-center text-navy-400">
                 ยังไม่มีใครลงทะเบียน
@@ -400,6 +418,14 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
             <h3 className="font-display text-base font-semibold text-navy">แก้ไขรายละเอียดงาน</h3>
             <div className="mt-4">
               <BoothEventForm event={event} />
+            </div>
+
+            <div className="mt-6">
+              <BoothEventDelete
+                eventId={event.id}
+                slug={event.slug}
+                entryCount={entries.length}
+              />
             </div>
           </section>
         </div>
