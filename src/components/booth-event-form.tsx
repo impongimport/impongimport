@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom'
 import toast from 'react-hot-toast'
 import { Save } from 'lucide-react'
 import { Field } from './billing-fields'
+import { ImageUpload } from './image-upload'
 import { saveBoothEvent } from '@/lib/actions/booth'
 import type { ActionResult } from '@/lib/billing'
 import type { BoothEvent } from '@/lib/types'
@@ -48,6 +49,15 @@ export function BoothEventForm({ event }: { event: BoothEvent | null }) {
           placeholder="เช่น เข็ม TAIYITCM 10 กล่อง"
           className="sm:col-span-2"
         />
+
+        <div className="sm:col-span-2">
+          <ImageUpload
+            name="prize_image_url"
+            defaultValue={event?.prize_image_url}
+            folder="booth"
+            label="รูปของรางวัล"
+          />
+        </div>
 
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium text-navy-600">ข้อความเชิญชวนหน้าแรกของฟอร์ม</span>

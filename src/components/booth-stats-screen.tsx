@@ -1,14 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Gift, Ticket, Users } from 'lucide-react'
+import Image from 'next/image'
+import { Gift, Maximize2, Minimize2, Ticket, Users } from 'lucide-react'
 import { BOOTH_QUESTIONS } from '@/lib/booth'
 import { createClient } from '@/lib/supabase/client'
 import type { BoothStats } from '@/lib/types'
 
-/** จอสรุปผลที่บูธ — ดึงตัวเลขใหม่เองทุก 10 วินาที ไม่ต้องรีเฟรชหน้า */
+/**
+ * จอสรุปผลที่บูธ — ดึงตัวเลขใหม่เองทุก 10 วินาที ไม่ต้องรีเฟรชหน้า
+ * และขอ wake lock ไว้ไม่ให้ iPad ดับจอระหว่างงาน
+ */
 export function BoothStatsScreen({ slug, initial }: { slug: string; initial: BoothStats }) {
   const [stats, setStats] = useState(initial)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -25,21 +30,91 @@ export function BoothStatsScreen({ slug, initial }: { slug: string; initial: Boo
     }
   }, [slug])
 
+  useEffect(() => {
+    // iOS ปล่อย wake lock ทิ้งทุกครั้งที่สลับแอปหรือล็อกจอ ต้องขอใหม่ตอนกลับมา
+    let sentinel: WakeLockSentinel | null = null
+    let released = false
+
+    async function acquire() {
+      if (!('wakeLock' in navigator) || released) return
+      try {
+        sentinel = await navigator.wakeLock.request('screen')
+      } catch {
+        // เบราว์เซอร์ไม่รองรับหรือผู้ใช้ปฏิเสธ — ปล่อยให้ตั้ง Auto-Lock เองแทน
+      }
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') void acquire()
+    }
+
+    void acquire()
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      released = true
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      void sentinel?.release()
+    }
+  }, [])
+
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen()
+        setIsFullscreen(false)
+      } else {
+        await document.documentElement.requestFullscreen()
+        setIsFullscreen(true)
+      }
+    } catch {
+      // Safari บน iPhone ไม่รองรับ — ใช้ "เพิ่มไปยังหน้าจอโฮม" แทน
+    }
+  }
+
   return (
     <div className="min-h-screen bg-navy px-6 py-10 text-white sm:px-10">
       <div className="mx-auto max-w-6xl">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
+        <header className="flex flex-wrap items-start justify-between gap-5">
+          <div className="min-w-0">
             <h1 className="font-display text-3xl font-semibold break-words sm:text-4xl">
               {stats.name}
             </h1>
-            {stats.venue && <p className="mt-2 text-navy-200">{stats.venue}</p>}
+            {stats.venue && <p className="mt-2 break-words text-navy-200">{stats.venue}</p>}
           </div>
-          {stats.prize && (
-            <p className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-2 text-sm text-gold-100">
-              <Gift className="size-4 text-gold" /> {stats.prize}
-            </p>
-          )}
+
+          <div className="flex items-center gap-4">
+            {(stats.prize || stats.prize_image_url) && (
+              <div className="flex items-center gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-3 pr-5">
+                {stats.prize_image_url && (
+                  <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-white/10">
+                    <Image
+                      src={stats.prize_image_url}
+                      alt={stats.prize ?? 'ของรางวัล'}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <span className="text-sm text-gold-100">
+                  <span className="flex items-center gap-1.5 text-xs tracking-wider text-gold-200 uppercase">
+                    <Gift className="size-3.5" /> ของรางวัล
+                  </span>
+                  <span className="mt-0.5 block max-w-50 break-words">{stats.prize}</span>
+                </span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'เต็มจอ'}
+              className="rounded-xl border border-white/15 p-3 text-navy-200 transition hover:border-gold hover:text-gold"
+            >
+              {isFullscreen ? <Minimize2 className="size-5" /> : <Maximize2 className="size-5" />}
+            </button>
+          </div>
         </header>
         <span className="rule-gold mt-5" />
 

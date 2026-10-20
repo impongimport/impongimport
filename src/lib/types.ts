@@ -117,6 +117,7 @@ export type BoothEvent = {
   starts_on: string | null
   ends_on: string | null
   prize: string | null
+  prize_image_url: string | null
   intro: string | null
   is_active: boolean
   created_at: string
@@ -145,6 +146,7 @@ export type BoothStats = {
   name: string
   venue: string | null
   prize: string | null
+  prize_image_url: string | null
   total: number
   orgs: number
   needle_type: Record<string, number>

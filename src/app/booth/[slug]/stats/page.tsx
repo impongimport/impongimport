@@ -9,6 +9,8 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'สรุปผลหน้าบูธ',
   robots: { index: false, follow: false },
+  // เพิ่มไปยังหน้าจอโฮมบน iPad แล้วเปิดเต็มจอ ไม่มีแถบ Safari
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'สรุปผลหน้าบูธ' },
 }
 
 export default async function BoothStatsPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -108,6 +108,12 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
             >
               <Monitor className="size-4" /> จอสรุปผล
             </a>
+            <p className="pt-2 text-left text-xs leading-relaxed text-navy-400">
+              ใช้ iPad เป็นจอได้ เปิดลิงก์จอสรุปผลใน Safari แล้วกดปุ่มแชร์ →
+              “เพิ่มไปยังหน้าจอโฮม” จะได้เต็มจอไม่มีแถบเบราว์เซอร์ ·
+              หน้านี้สั่งไม่ให้จอดับให้อยู่แล้ว ถ้า iPad ยังหลับให้ตั้ง
+              ตั้งค่า → จอภาพและความสว่าง → ล็อกอัตโนมัติ เป็น “ไม่เลย”
+            </p>
             <a
               href={`/admin/booth/${event.id}/export`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-5 py-3 text-sm font-medium text-navy transition hover:border-gold"

@@ -88,6 +88,7 @@ export async function saveBoothEvent(
     starts_on: str('starts_on'),
     ends_on: str('ends_on'),
     prize: str('prize'),
+    prize_image_url: str('prize_image_url'),
     intro: str('intro'),
     is_active: formData.get('is_active') === 'on',
   }

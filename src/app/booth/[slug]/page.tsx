@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Gift, PartyPopper } from 'lucide-react'
 import { BoothForm } from '@/components/booth-form'
@@ -52,11 +53,29 @@ export default async function BoothPage({ params }: { params: Promise<{ slug: st
             {event.intro ??
               'กรอกข้อมูลสั้น ๆ ไม่ถึงหนึ่งนาที เพื่อรับสิทธิ์ร่วมจับฉลากและให้ทีมงานติดต่อกลับเรื่องสินค้าที่ท่านสนใจ'}
           </p>
-          {event.prize && (
-            <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-white/5 px-4 py-3 text-sm leading-relaxed text-gold-100">
-              <Gift className="mt-0.5 size-4 shrink-0 text-gold" />
-              ของรางวัล: {event.prize}
-            </p>
+          {(event.prize || event.prize_image_url) && (
+            <div className="mt-6 flex items-center gap-4 rounded-2xl bg-white/5 p-4">
+              {event.prize_image_url && (
+                <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-white/10">
+                  <Image
+                    src={event.prize_image_url}
+                    alt={event.prize ?? 'ของรางวัล'}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <p className="flex items-start gap-2.5 text-sm leading-relaxed text-gold-100">
+                <Gift className="mt-0.5 size-4 shrink-0 text-gold" />
+                <span>
+                  <span className="block text-xs tracking-wider text-gold-200 uppercase">
+                    ของรางวัล
+                  </span>
+                  {event.prize ?? 'ลุ้นรับของรางวัลจากทีมงาน'}
+                </span>
+              </p>
+            </div>
           )}
         </div>
       </section>
