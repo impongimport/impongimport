@@ -25,10 +25,20 @@ const COMPOUNDS = [
   'แผนจีน',
 ]
 
-/** ใส่ word joiner ในคำประสม ใช้กับข้อความตัวใหญ่ที่ตัดบรรทัดผิดแล้วเห็นชัด */
+/**
+ * ใส่ word joiner ในคำประสม ใช้กับข้อความตัวใหญ่ที่ตัดบรรทัดผิดแล้วเห็นชัด
+ *
+ * **ต้องคั่นระหว่าง grapheme cluster เท่านั้น ห้ามคั่นทุกตัวอักษร** — สระและวรรณยุกต์ไทย
+ * เป็นคนละ code point กับพยัญชนะที่มันเกาะอยู่ ถ้าเอา word joiner ไปแทรกกลาง
+ * เบราว์เซอร์จะถือว่าสระนั้นไม่มีพยัญชนะ แล้ววาดวงกลมประจุด (◌) ขึ้นมาแทน
+ * (Safari บน iPad/iPhone เป็นชัดสุด) `Intl.Segmenter` ตัดเป็นคลัสเตอร์ให้ถูกต้อง
+ */
 export function keepWords(text: string) {
-  return COMPOUNDS.reduce(
-    (acc, word) => acc.split(word).join([...word].join(WORD_JOINER)),
-    text
-  )
+  if (typeof Intl === 'undefined' || !('Segmenter' in Intl)) return text
+
+  const segmenter = new Intl.Segmenter('th', { granularity: 'grapheme' })
+  const join = (word: string) =>
+    [...segmenter.segment(word)].map((part) => part.segment).join(WORD_JOINER)
+
+  return COMPOUNDS.reduce((acc, word) => acc.split(word).join(join(word)), text)
 }
