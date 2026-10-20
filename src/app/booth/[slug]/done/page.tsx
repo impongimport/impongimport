@@ -56,27 +56,48 @@ export default async function BoothDonePage({
           </p>
         </div>
 
-        <p className="mt-6 text-sm leading-relaxed text-navy-500">
-          กรุณาบันทึกหน้าจอนี้ไว้ {event?.ends_on && 'ประกาศผลวันสุดท้ายของงาน '}
-          ทีมงานจะติดต่อผู้โชคดีทางเบอร์โทรที่ลงทะเบียนไว้
-        </p>
+        {/* ขั้นตอนสุดท้าย — จุดนี้คือตัวผลักให้คนเพิ่มเพื่อน LINE OA */}
+        <div className="mt-8 rounded-2xl border border-navy-100 bg-navy-50/60 p-6 text-left">
+          <h2 className="text-center font-display text-lg font-semibold text-navy">
+            อีกขั้นตอนเดียว
+          </h2>
+          <ol className="mt-5 space-y-4">
+            <Step n={1}>
+              <strong className="font-medium text-navy">แคปหน้าจอนี้เก็บไว้</strong>{' '}
+              ให้เห็นหมายเลข {ticket}
+            </Step>
+            <Step n={2}>
+              <strong className="font-medium text-navy">เพิ่มเพื่อน LINE {site.lineId}</strong>{' '}
+              จากปุ่มด้านล่าง
+            </Step>
+            <Step n={3}>
+              <strong className="font-medium text-navy">ส่งรูปที่แคปเข้าไลน์</strong>{' '}
+              ทีมงานจะตอบกลับยืนยันให้
+            </Step>
+          </ol>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <a
             href={site.lineUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-3 text-sm font-medium text-white transition hover:bg-navy-700"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#06C755] px-6 py-4 text-base font-semibold whitespace-nowrap text-white transition hover:brightness-95 sm:text-lg"
           >
-            <MessageCircle className="size-4" /> เพิ่มเพื่อน LINE {site.lineId}
-          </a>
-          <a
-            href={site.phoneHref}
-            className="inline-flex items-center gap-2 rounded-xl border border-navy-200 px-5 py-3 text-sm font-medium text-navy transition hover:border-gold"
-          >
-            <Phone className="size-4 text-gold" /> {site.phone}
+            <MessageCircle className="size-5 shrink-0" />
+            เพิ่มเพื่อน LINE {site.lineId}
           </a>
         </div>
+
+        <p className="mt-6 text-sm leading-relaxed text-navy-500">
+          {event?.ends_on ? 'ประกาศผลวันสุดท้ายของงาน · ' : ''}
+          ทีมงานจะติดต่อผู้โชคดีทางเบอร์โทรที่ลงทะเบียนไว้
+        </p>
+
+        <a
+          href={site.phoneHref}
+          className="mt-5 inline-flex items-center gap-2 rounded-xl border border-navy-200 px-5 py-3 text-sm font-medium text-navy transition hover:border-gold"
+        >
+          <Phone className="size-4 text-gold" /> {site.phone}
+        </a>
 
         <Link
           href="/products"
@@ -86,5 +107,16 @@ export default async function BoothDonePage({
         </Link>
       </div>
     </div>
+  )
+}
+
+function Step({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3">
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-navy text-sm font-semibold text-white">
+        {n}
+      </span>
+      <span className="text-sm leading-relaxed text-navy-600">{children}</span>
+    </li>
   )
 }

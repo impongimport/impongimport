@@ -16,7 +16,8 @@ export const site = {
   phoneHref: 'tel:+66884993473',
   email: 'impongimport@gmail.com',
   lineId: '@impong',
-  lineUrl: 'https://line.me/R/ti/p/@impong',
+  // ลิงก์ทางการจาก LINE OA — เปิดติดทุกเครื่องมากกว่า line.me/R/ti/p/<id>
+  lineUrl: 'https://lin.ee/XdmNYrF',
   hours: 'จันทร์ – ศุกร์ 09:00 – 17:00 น.',
   adminEmail: 'impongimport@gmail.com',
 } as const
