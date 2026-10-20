@@ -8,20 +8,23 @@ import {
   Download,
   ExternalLink,
   FileText,
+  Gift,
   Monitor,
   Shuffle,
   Trophy,
 } from 'lucide-react'
 import { BoothEventForm } from '@/components/booth-event-form'
+import { BoothPrizeForm } from '@/components/booth-prize-form'
 import {
   createQuoteFromEntry,
+  deletePrize,
   drawBoothWinner,
   undoBoothWinner,
 } from '@/lib/actions/booth'
 import { formatPhone, summarizeAnswers } from '@/lib/booth'
 import { formatDateTime } from '@/lib/format'
 import { createClient } from '@/lib/supabase/server'
-import type { BoothEntry, BoothEvent } from '@/lib/types'
+import type { BoothEntry, BoothEvent, BoothPrize } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,19 +39,30 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: eventRow }, { data: entryRows }] = await Promise.all([
+  const [{ data: eventRow }, { data: entryRows }, { data: prizeRows }] = await Promise.all([
     supabase.from('booth_events').select('*').eq('id', id).maybeSingle(),
     supabase
       .from('booth_entries')
       .select('*')
       .eq('event_id', id)
       .order('created_at', { ascending: false }),
+    supabase.from('booth_prizes').select('*').eq('event_id', id).order('sort_order'),
   ])
 
   if (!eventRow) notFound()
   const event = eventRow as BoothEvent
   const entries = (entryRows as BoothEntry[]) ?? []
-  const winners = entries.filter((e) => e.is_winner)
+  const prizes = (prizeRows as BoothPrize[]) ?? []
+
+  const winners = entries
+    .filter((e) => e.is_winner)
+    .sort((a, b) => (b.won_at ?? '').localeCompare(a.won_at ?? ''))
+  const prizeById = new Map(prizes.map((p) => [p.id, p]))
+  const awardedByPrize = new Map<string, number>()
+  for (const w of winners) {
+    if (w.prize_id) awardedByPrize.set(w.prize_id, (awardedByPrize.get(w.prize_id) ?? 0) + 1)
+  }
+  const everyoneWon = entries.length > 0 && entries.length === winners.length
 
   const baseUrl = await getBaseUrl()
   const formUrl = `${baseUrl}/booth/${event.slug}`
@@ -108,45 +122,87 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
             >
               <Monitor className="size-4" /> จอสรุปผล
             </a>
-            <p className="pt-2 text-left text-xs leading-relaxed text-navy-400">
-              ใช้ iPad เป็นจอได้ เปิดลิงก์จอสรุปผลใน Safari แล้วกดปุ่มแชร์ →
-              “เพิ่มไปยังหน้าจอโฮม” จะได้เต็มจอไม่มีแถบเบราว์เซอร์ ·
-              หน้านี้สั่งไม่ให้จอดับให้อยู่แล้ว ถ้า iPad ยังหลับให้ตั้ง
-              ตั้งค่า → จอภาพและความสว่าง → ล็อกอัตโนมัติ เป็น “ไม่เลย”
-            </p>
             <a
               href={`/admin/booth/${event.id}/export`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 px-5 py-3 text-sm font-medium text-navy transition hover:border-gold"
             >
               <Download className="size-4" /> ดาวน์โหลด CSV
             </a>
+            <p className="pt-2 text-left text-xs leading-relaxed text-navy-400">
+              ใช้ iPad เป็นจอได้ เปิดลิงก์จอสรุปผลใน Safari แล้วกดปุ่มแชร์ →
+              “เพิ่มไปยังหน้าจอโฮม” จะได้เต็มจอไม่มีแถบเบราว์เซอร์ ·
+              หน้านี้สั่งไม่ให้จอดับให้อยู่แล้ว ถ้า iPad ยังหลับให้ตั้ง
+              ตั้งค่า → จอภาพและความสว่าง → ล็อกอัตโนมัติ เป็น “ไม่เลย”
+            </p>
           </div>
         </div>
 
         <div>
-          {/* จับฉลาก */}
+          {/* จับฉลากทีละรางวัล */}
           <section className="rounded-2xl border border-gold/40 bg-gold-50 p-6">
             <h3 className="flex items-center gap-2 font-semibold text-navy">
               <Trophy className="size-4 text-gold-600" /> จับฉลาก
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-navy-600">
-              ระบบสุ่มจากผู้ลงทะเบียนที่ยังไม่เคยถูกรางวัล กดได้หลายครั้งถ้ามีของรางวัลหลายชิ้น
+              กดสุ่มได้เท่ากับจำนวนของรางวัลแต่ละระดับ ระบบสุ่มจากผู้ลงทะเบียนที่ยังไม่เคยถูกรางวัล
             </p>
-            <form action={drawBoothWinner} className="mt-5">
-              <input type="hidden" name="event_id" value={event.id} />
-              <button
-                type="submit"
-                disabled={entries.length === winners.length}
-                className="inline-flex items-center gap-2 rounded-xl bg-navy px-6 py-3.5 font-medium text-white transition hover:bg-navy-700 disabled:opacity-50"
-              >
-                <Shuffle className="size-4" />
-                {entries.length === 0
-                  ? 'ยังไม่มีผู้ลงทะเบียน'
-                  : entries.length === winners.length
-                    ? 'จับครบทุกคนแล้ว'
-                    : 'สุ่มผู้โชคดี'}
-              </button>
-            </form>
+
+            {prizes.length === 0 ? (
+              <p className="mt-5 rounded-xl bg-white px-4 py-3 text-sm text-navy-500">
+                ยังไม่ได้ตั้งของรางวัล เพิ่มได้ที่หัวข้อ “ของรางวัล” ด้านล่าง
+              </p>
+            ) : (
+              <ul className="mt-5 space-y-3">
+                {prizes.map((prize) => {
+                  const awarded = awardedByPrize.get(prize.id) ?? 0
+                  const left = prize.quantity - awarded
+                  return (
+                    <li
+                      key={prize.id}
+                      className="flex flex-wrap items-center gap-4 rounded-xl bg-white px-4 py-3"
+                    >
+                      {prize.image_url && (
+                        <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-navy-50">
+                          <Image
+                            src={prize.image_url}
+                            alt={prize.name}
+                            fill
+                            sizes="48px"
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium break-words text-navy">{prize.name}</p>
+                        <p className="mt-0.5 text-sm text-navy-400">
+                          จับแล้ว {awarded} / {prize.quantity}
+                          {left > 0 && ` · เหลืออีก ${left}`}
+                        </p>
+                      </div>
+                      <form action={drawBoothWinner}>
+                        <input type="hidden" name="event_id" value={event.id} />
+                        <input type="hidden" name="prize_id" value={prize.id} />
+                        <button
+                          type="submit"
+                          disabled={left <= 0 || everyoneWon || entries.length === 0}
+                          className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-3 text-sm font-medium text-white transition hover:bg-navy-700 disabled:opacity-40"
+                        >
+                          <Shuffle className="size-4" />
+                          {left <= 0 ? 'ครบแล้ว' : 'สุ่ม'}
+                        </button>
+                      </form>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+
+            {entries.length === 0 && (
+              <p className="mt-4 text-sm text-navy-400">ยังไม่มีผู้ลงทะเบียนให้สุ่ม</p>
+            )}
+            {everyoneWon && (
+              <p className="mt-4 text-sm text-navy-400">ผู้ลงทะเบียนถูกรางวัลครบทุกคนแล้ว</p>
+            )}
 
             {winners.length > 0 && (
               <ul className="mt-6 space-y-2.5">
@@ -161,6 +217,11 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
                     <span className="min-w-0 flex-1 truncate text-sm text-navy-700">
                       {w.full_name} · {w.org_name}
                     </span>
+                    {w.prize_id && (
+                      <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-medium text-gold-700">
+                        {prizeById.get(w.prize_id)?.name ?? 'ของรางวัล'}
+                      </span>
+                    )}
                     <a
                       href={`tel:${w.phone}`}
                       className="text-sm font-medium text-navy hover:text-gold-700"
@@ -183,8 +244,41 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
             )}
           </section>
 
-          {/* รายชื่อ */}
+          {/* ของรางวัล */}
           <section className="mt-8">
+            <h3 className="flex items-center gap-2 font-display text-base font-semibold text-navy">
+              <Gift className="size-4 text-gold" /> ของรางวัล
+            </h3>
+            <p className="mt-2 text-sm text-navy-400">
+              ตั้งได้หลายระดับ เช่น รางวัลที่ 1 จำนวน 4 รางวัล และรางวัลที่ 2 จำนวน 6 รางวัล
+            </p>
+
+            <div className="mt-4 space-y-4">
+              {prizes.map((prize) => (
+                <div key={prize.id} className="rounded-2xl border border-navy-100 bg-white p-6">
+                  <BoothPrizeForm eventId={event.id} prize={prize} />
+                  <form action={deletePrize} className="mt-4 border-t border-navy-100 pt-4">
+                    <input type="hidden" name="id" value={prize.id} />
+                    <input type="hidden" name="event_id" value={event.id} />
+                    <button
+                      type="submit"
+                      className="text-sm text-navy-400 transition hover:text-red-600"
+                    >
+                      ลบรางวัลนี้
+                    </button>
+                  </form>
+                </div>
+              ))}
+
+              <div className="rounded-2xl border border-dashed border-navy-200 bg-white p-6">
+                <p className="mb-4 text-sm font-medium text-navy-600">เพิ่มของรางวัล</p>
+                <BoothPrizeForm eventId={event.id} prize={null} nextOrder={prizes.length} />
+              </div>
+            </div>
+          </section>
+
+          {/* รายชื่อ */}
+          <section className="mt-10">
             <h3 className="font-display text-base font-semibold text-navy">รายชื่อผู้ลงทะเบียน</h3>
             {entries.length === 0 ? (
               <p className="mt-4 rounded-2xl border border-dashed border-navy-200 px-6 py-12 text-center text-navy-400">
@@ -200,7 +294,9 @@ export default async function AdminBoothEvent({ params }: { params: Promise<{ id
                       </span>
                       {entry.is_winner && (
                         <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-medium text-gold-700">
-                          ผู้โชคดี
+                          {entry.prize_id
+                            ? (prizeById.get(entry.prize_id)?.name ?? 'ผู้โชคดี')
+                            : 'ผู้โชคดี'}
                         </span>
                       )}
                       {entry.user_id && (

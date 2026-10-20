@@ -116,8 +116,6 @@ export type BoothEvent = {
   venue: string | null
   starts_on: string | null
   ends_on: string | null
-  prize: string | null
-  prize_image_url: string | null
   intro: string | null
   is_active: boolean
   created_at: string
@@ -135,23 +133,39 @@ export type BoothEntry = {
   answers: Record<string, string | string[]>
   user_id: string | null
   quote_request_id: string | null
+  prize_id: string | null
   is_winner: boolean
   won_at: string | null
   admin_note: string | null
   created_at: string
 }
 
+/** ของรางวัลหนึ่งระดับ เช่น "รางวัลที่ 1" จำนวน 4 ชิ้น */
+export type BoothPrize = {
+  id: string
+  event_id: string
+  name: string
+  quantity: number
+  image_url: string | null
+  sort_order: number
+}
+
 /** ผลรวมจาก RPC booth_stats() — ไม่มีข้อมูลส่วนบุคคล ใช้ฉายขึ้นจอได้ */
 export type BoothStats = {
   name: string
   venue: string | null
-  prize: string | null
-  prize_image_url: string | null
   total: number
   orgs: number
   needle_type: Record<string, number>
   handle: Record<string, number>
   sizes: Record<string, number>
   interests: Record<string, number>
-  winners: { ticket: string; org: string }[]
+  prizes: {
+    id: string
+    name: string
+    quantity: number
+    image_url: string | null
+    awarded: number
+  }[]
+  winners: { ticket: string; org: string; prize: string | null; prize_image_url: string | null }[]
 }

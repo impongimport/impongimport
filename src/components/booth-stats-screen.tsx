@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Gift, Maximize2, Minimize2, Ticket, Users } from 'lucide-react'
+import { Gift, Maximize2, Minimize2, Ticket, Trophy, Users } from 'lucide-react'
 import { BOOTH_QUESTIONS } from '@/lib/booth'
 import { createClient } from '@/lib/supabase/client'
 import type { BoothStats } from '@/lib/types'
@@ -72,6 +72,8 @@ export function BoothStatsScreen({ slug, initial }: { slug: string; initial: Boo
     }
   }
 
+  const [latest, ...earlier] = stats.winners
+
   return (
     <div className="min-h-screen bg-navy px-6 py-10 text-white sm:px-10">
       <div className="mx-auto max-w-6xl">
@@ -82,41 +84,98 @@ export function BoothStatsScreen({ slug, initial }: { slug: string; initial: Boo
             </h1>
             {stats.venue && <p className="mt-2 break-words text-navy-200">{stats.venue}</p>}
           </div>
-
-          <div className="flex items-center gap-4">
-            {(stats.prize || stats.prize_image_url) && (
-              <div className="flex items-center gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-3 pr-5">
-                {stats.prize_image_url && (
-                  <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-white/10">
-                    <Image
-                      src={stats.prize_image_url}
-                      alt={stats.prize ?? 'ของรางวัล'}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <span className="text-sm text-gold-100">
-                  <span className="flex items-center gap-1.5 text-xs tracking-wider text-gold-200 uppercase">
-                    <Gift className="size-3.5" /> ของรางวัล
-                  </span>
-                  <span className="mt-0.5 block max-w-50 break-words">{stats.prize}</span>
-                </span>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              aria-label={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'เต็มจอ'}
-              className="rounded-xl border border-white/15 p-3 text-navy-200 transition hover:border-gold hover:text-gold"
-            >
-              {isFullscreen ? <Minimize2 className="size-5" /> : <Maximize2 className="size-5" />}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'เต็มจอ'}
+            className="rounded-xl border border-white/15 p-3 text-navy-200 transition hover:border-gold hover:text-gold"
+          >
+            {isFullscreen ? <Minimize2 className="size-5" /> : <Maximize2 className="size-5" />}
+          </button>
         </header>
         <span className="rule-gold mt-5" />
+
+        {/* ผู้โชคดีอยู่บนสุด เพราะเป็นสิ่งที่คนที่บูธรอดู */}
+        {stats.winners.length > 0 && (
+          <section className="mt-8 rounded-3xl border border-gold/30 bg-gold/5 p-6 sm:p-8">
+            <h2 className="flex items-center gap-2.5 font-display text-2xl font-semibold text-gold">
+              <Trophy className="size-6" /> ผู้โชคดี
+            </h2>
+
+            {/* คนล่าสุดตัวใหญ่ ให้คนที่บูธเห็นทันทีว่าเพิ่งจับใคร */}
+            <div className="mt-6 flex flex-wrap items-center gap-6 rounded-2xl bg-white/10 p-6">
+              {latest.prize_image_url && (
+                <div className="relative size-28 shrink-0 overflow-hidden rounded-2xl bg-white/10">
+                  <Image
+                    src={latest.prize_image_url}
+                    alt={latest.prize ?? 'ของรางวัล'}
+                    fill
+                    sizes="112px"
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <div className="min-w-0">
+                {latest.prize && (
+                  <p className="font-display text-lg font-semibold text-gold-200">{latest.prize}</p>
+                )}
+                <p className="mt-1 font-display text-5xl font-semibold tracking-wider text-gold sm:text-6xl">
+                  {latest.ticket}
+                </p>
+                <p className="mt-2 text-lg break-words text-navy-100">{latest.org}</p>
+              </div>
+            </div>
+
+            {earlier.length > 0 && (
+              <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {earlier.map((w) => (
+                  <li key={w.ticket} className="rounded-2xl bg-white/5 px-5 py-4">
+                    {w.prize && <p className="text-xs text-gold-200">{w.prize}</p>}
+                    <p className="mt-0.5 font-display text-2xl font-semibold tracking-wider text-gold">
+                      {w.ticket}
+                    </p>
+                    <p className="mt-1 text-sm break-words text-navy-100">{w.org}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+        {/* ของรางวัลและจำนวนที่จับไปแล้ว */}
+        {stats.prizes.length > 0 && (
+          <section className="mt-8">
+            <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-gold">
+              <Gift className="size-4" /> ของรางวัล
+            </h2>
+            <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {stats.prizes.map((prize) => (
+                <li
+                  key={prize.id}
+                  className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                >
+                  {prize.image_url && (
+                    <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-white/10">
+                      <Image
+                        src={prize.image_url}
+                        alt={prize.name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="break-words text-navy-100">{prize.name}</p>
+                    <p className="mt-1 font-display text-sm text-gold">
+                      จับแล้ว {prize.awarded} / {prize.quantity}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           <Stat icon={Users} label="ผู้ร่วมตอบแบบสอบถาม" value={stats.total} />
@@ -153,22 +212,6 @@ export function BoothStatsScreen({ slug, initial }: { slug: string; initial: Boo
             )
           })}
         </div>
-
-        {stats.winners.length > 0 && (
-          <section className="mt-12 rounded-3xl border border-gold/30 bg-gold/5 p-8">
-            <h2 className="font-display text-2xl font-semibold text-gold">ผู้โชคดี</h2>
-            <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {stats.winners.map((w) => (
-                <li key={w.ticket} className="rounded-2xl bg-white/10 px-5 py-4">
-                  <p className="font-display text-2xl font-semibold tracking-wider text-gold">
-                    {w.ticket}
-                  </p>
-                  <p className="mt-1 text-sm break-words text-navy-100">{w.org}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
     </div>
   )

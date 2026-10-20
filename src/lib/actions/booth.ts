@@ -87,8 +87,6 @@ export async function saveBoothEvent(
     venue: str('venue'),
     starts_on: str('starts_on'),
     ends_on: str('ends_on'),
-    prize: str('prize'),
-    prize_image_url: str('prize_image_url'),
     intro: str('intro'),
     is_active: formData.get('is_active') === 'on',
   }
@@ -108,7 +106,51 @@ export async function drawBoothWinner(formData: FormData): Promise<void> {
   if (!ctx) return
 
   const eventId = formData.get('event_id') as string
-  await ctx.supabase.rpc('booth_draw_winner', { p_event: eventId })
+  await ctx.supabase.rpc('booth_draw_winner', {
+    p_event: eventId,
+    p_prize: (formData.get('prize_id') as string) || null,
+  })
+
+  revalidatePath(`/admin/booth/${eventId}`)
+}
+
+export async function savePrize(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const ctx = await requireAdminClient()
+  if (!ctx) return { ok: false, message: 'ไม่มีสิทธิ์' }
+
+  const str = (key: string) => (formData.get(key) as string | null)?.trim() || null
+  const id = str('id')
+  const name = str('name')
+  if (!name) return { ok: false, message: 'กรุณากรอกชื่อรางวัล' }
+
+  const quantity = Math.max(1, Number(str('quantity') ?? 1) || 1)
+  const payload = {
+    event_id: formData.get('event_id') as string,
+    name,
+    quantity,
+    image_url: str('image_url'),
+    sort_order: Number(str('sort_order') ?? 0) || 0,
+  }
+
+  const { error } = id
+    ? await ctx.supabase.from('booth_prizes').update(payload).eq('id', id)
+    : await ctx.supabase.from('booth_prizes').insert(payload)
+
+  if (error) return { ok: false, message: 'บันทึกไม่สำเร็จ: ' + error.message }
+
+  revalidatePath(`/admin/booth/${payload.event_id}`)
+  return { ok: true, message: 'บันทึกของรางวัลแล้ว' }
+}
+
+export async function deletePrize(formData: FormData): Promise<void> {
+  const ctx = await requireAdminClient()
+  if (!ctx) return
+
+  const eventId = formData.get('event_id') as string
+  await ctx.supabase.from('booth_prizes').delete().eq('id', formData.get('id') as string)
 
   revalidatePath(`/admin/booth/${eventId}`)
 }
@@ -121,7 +163,7 @@ export async function undoBoothWinner(formData: FormData): Promise<void> {
   const eventId = formData.get('event_id') as string
   await ctx.supabase
     .from('booth_entries')
-    .update({ is_winner: false, won_at: null })
+    .update({ is_winner: false, won_at: null, prize_id: null })
     .eq('id', id)
 
   revalidatePath(`/admin/booth/${eventId}`)

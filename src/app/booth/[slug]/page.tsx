@@ -5,7 +5,7 @@ import { Gift, PartyPopper } from 'lucide-react'
 import { BoothForm } from '@/components/booth-form'
 import { site } from '@/lib/site'
 import { hasSupabase, supabasePublic } from '@/lib/supabase/public'
-import type { BoothEvent } from '@/lib/types'
+import type { BoothEvent, BoothPrize } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,10 +33,22 @@ export async function generateMetadata({
   }
 }
 
+async function getPrizes(eventId: string): Promise<BoothPrize[]> {
+  if (!hasSupabase) return []
+  const { data } = await supabasePublic
+    .from('booth_prizes')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('sort_order')
+  return (data as BoothPrize[]) ?? []
+}
+
 export default async function BoothPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const event = await getEvent(slug)
   if (!event) notFound()
+
+  const prizes = await getPrizes(event.id)
 
   return (
     <>
@@ -53,28 +65,32 @@ export default async function BoothPage({ params }: { params: Promise<{ slug: st
             {event.intro ??
               'กรอกข้อมูลสั้น ๆ ไม่ถึงหนึ่งนาที เพื่อรับสิทธิ์ร่วมจับฉลากและให้ทีมงานติดต่อกลับเรื่องสินค้าที่ท่านสนใจ'}
           </p>
-          {(event.prize || event.prize_image_url) && (
-            <div className="mt-6 flex items-center gap-4 rounded-2xl bg-white/5 p-4">
-              {event.prize_image_url && (
-                <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-white/10">
-                  <Image
-                    src={event.prize_image_url}
-                    alt={event.prize ?? 'ของรางวัล'}
-                    fill
-                    sizes="96px"
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <p className="flex items-start gap-2.5 text-sm leading-relaxed text-gold-100">
-                <Gift className="mt-0.5 size-4 shrink-0 text-gold" />
-                <span>
-                  <span className="block text-xs tracking-wider text-gold-200 uppercase">
-                    ของรางวัล
-                  </span>
-                  {event.prize ?? 'ลุ้นรับของรางวัลจากทีมงาน'}
-                </span>
+          {prizes.length > 0 && (
+            <div className="mt-6 rounded-2xl bg-white/5 p-4">
+              <p className="flex items-center gap-2 text-xs tracking-wider text-gold-200 uppercase">
+                <Gift className="size-3.5 text-gold" /> ของรางวัล
               </p>
+              <ul className="mt-3 space-y-3">
+                {prizes.map((prize) => (
+                  <li key={prize.id} className="flex items-center gap-3">
+                    {prize.image_url && (
+                      <div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-white/10">
+                        <Image
+                          src={prize.image_url}
+                          alt={prize.name}
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <span className="text-sm leading-relaxed break-words text-gold-100">
+                      {prize.name}
+                      <span className="ml-2 text-gold-200">{prize.quantity} รางวัล</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
