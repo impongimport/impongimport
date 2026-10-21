@@ -174,3 +174,30 @@ export async function updateQuoteStatus(formData: FormData): Promise<void> {
   revalidatePath('/admin/quotes')
   revalidatePath(`/admin/quotes/${id}`)
 }
+
+/**
+ * ให้สิทธิ์แอดมินกับบัญชีลูกค้า — เฉพาะ superadmin เท่านั้น
+ *
+ * ตรวจซ้ำฝั่งเซิร์ฟเวอร์ทุกข้อ ไม่เชื่อค่าจากฟอร์ม และ trigger
+ * `guard_profile_changes` ในฐานข้อมูลยังกันอีกชั้นถ้าหลุดมาถึง
+ */
+export async function setUserRole(formData: FormData): Promise<void> {
+  const session = await getSession()
+  if (!session || session.profile?.role !== 'superadmin') return
+
+  const id = formData.get('id') as string
+  const role = formData.get('role') as string
+
+  // เปลี่ยนได้แค่ระหว่าง user กับ admin · สิทธิ์ superadmin ตั้งจากฐานข้อมูลเท่านั้น
+  if (role !== 'user' && role !== 'admin') return
+  if (id === session.userId) return
+
+  const supabase = await createClient()
+
+  const { data: target } = await supabase.from('profiles').select('role').eq('id', id).maybeSingle()
+  if (!target || target.role === 'superadmin') return
+
+  await supabase.from('profiles').update({ role }).eq('id', id)
+
+  revalidatePath('/admin/users')
+}

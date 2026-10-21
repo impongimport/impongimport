@@ -1,6 +1,14 @@
 import Link from 'next/link'
-import { FileText, LayoutDashboard, Newspaper, Package, QrCode, Users } from 'lucide-react'
-import { requireAdmin } from '@/lib/auth'
+import {
+  FileText,
+  LayoutDashboard,
+  Newspaper,
+  Package,
+  QrCode,
+  ShieldCheck,
+  Users,
+} from 'lucide-react'
+import { isSuperadmin, requireAdmin } from '@/lib/auth'
 
 const NAV = [
   { href: '/admin', label: 'ภาพรวม', icon: LayoutDashboard },
@@ -12,7 +20,11 @@ const NAV = [
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin()
+  const session = await requireAdmin()
+  // หน้าจัดการสิทธิ์เปิดให้เฉพาะผู้ดูแลสูงสุด
+  const nav = isSuperadmin(session.profile)
+    ? [...NAV, { href: '/admin/users', label: 'สิทธิ์เข้าระบบ', icon: ShieldCheck }]
+    : NAV
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -20,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <span className="rule-gold mt-3" />
 
       <nav className="mt-6 flex flex-wrap gap-2 border-b border-navy-100 pb-4">
-        {NAV.map(({ href, label, icon: Icon }) => (
+        {nav.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}

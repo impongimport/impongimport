@@ -30,6 +30,16 @@ export async function requireSession(next = '/me'): Promise<Session> {
   return session
 }
 
+export function isSuperadmin(profile: Profile | null | undefined) {
+  return profile?.role === 'superadmin'
+}
+
+export async function requireSuperadmin(): Promise<Session> {
+  const session = await requireSession('/admin/users')
+  if (!isSuperadmin(session.profile)) redirect('/admin')
+  return session
+}
+
 export async function requireAdmin(): Promise<Session> {
   const session = await requireSession('/admin')
   if (!isAdmin(session.profile)) redirect('/')
